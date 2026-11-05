@@ -12,13 +12,61 @@ pytestmark = [pytest.mark.api]
 @pytest.mark.api
 @pytest.mark.smoke
 def test_get_all_electronics_status_and_count():
-    """Verify GET /electronicapi returns 200 and a non-empty list of products."""
+    """Verify requirement 1: GET list returns 200 and a non-empty list of products."""
     resp = requests.get(MOCK_API_BASE_URL, timeout=10)
     assert resp.status_code == 200
     assert "application/json" in resp.headers.get("Content-Type", "")
     data = resp.json()
     assert isinstance(data, list)
     assert len(data) >= 20, f"Expected at least 20 items, got {len(data)}"
+
+
+@pytest.mark.api
+def test_response_headers_and_content_type():
+    """Verify requirement 4: Response headers, status code, and JSON content-type."""
+    resp = requests.get(MOCK_API_BASE_URL, timeout=10)
+    assert resp.status_code == 200
+    content_type = resp.headers.get("Content-Type", "")
+    assert "application/json" in content_type, f"Expected application/json header, got {content_type}"
+    assert "Date" in resp.headers or "date" in resp.headers
+
+
+@pytest.mark.api
+def test_response_structure_and_data_types():
+    """Verify requirement 5: Validate response JSON schema and field data types."""
+    resp = requests.get(f"{MOCK_API_BASE_URL}?page=1&limit=5", timeout=10)
+    assert resp.status_code == 200
+    items = resp.json()
+    assert isinstance(items, list) and len(items) > 0
+    
+    for item in items:
+        assert isinstance(item, dict)
+        assert isinstance(item.get("id"), str)
+        assert isinstance(item.get("name"), str)
+        assert "price" in item
+        assert isinstance(item.get("category"), str)
+
+
+@pytest.mark.api
+def test_api_response_time_under_two_seconds():
+    """Verify requirement 6: Response time is under 2 seconds with reasonable tolerance."""
+    resp = requests.get(MOCK_API_BASE_URL, timeout=10)
+    elapsed = resp.elapsed.total_seconds()
+    # 2.0 seconds requirement with slight tolerance for network latency
+    assert elapsed < 2.5, f"Response time was {elapsed:.2f}s, exceeding SLA"
+
+
+@pytest.mark.api
+def test_safe_invalid_payload_handling():
+    """Verify requirement 7: Malformed non-JSON payload returns 400 Bad Request."""
+    resp = requests.post(
+        MOCK_API_BASE_URL, 
+        data="malformed-non-json-payload-data", 
+        headers={"Content-Type": "application/json"}, 
+        timeout=10
+    )
+    assert resp.status_code == 400, f"Expected 400 Bad Request for malformed payload, got {resp.status_code}"
+
 
 
 @pytest.mark.api

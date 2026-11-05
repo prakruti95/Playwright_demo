@@ -5,7 +5,7 @@ import pytest
 import requests
 from playwright.sync_api import Page, Route
 from framework.config import BASE_URL, TEST_SHIPPING_ADDRESS
-from framework.pages import ProductDetailPage, CheckoutPage
+from framework.pages import ProductDetailPage, CheckoutPage, ProductsPage
 
 pytestmark = [pytest.mark.api]
 
@@ -77,3 +77,49 @@ def test_mock_order_api_success_contract(page: Page):
     
     # Ensure review stage is reached
     assert checkout.is_review_stage_visible()
+
+
+@pytest.mark.api
+def test_live_ui_and_catalog_api_consistency(page: Page):
+    """
+    Verify requirement 8: UI and API Consistency.
+    Confirms that catalog data from GET /catalog.json strictly matches
+    the products rendered in the live UI catalog.
+    """
+    api_resp = requests.get(f"{BASE_URL}/catalog.json", timeout=10)
+    assert api_resp.status_code == 200
+    api_products = api_resp.json()["products"]
+    api_names = {p["name"] for p in api_products}
+
+    products_page = ProductsPage(page)
+    products_page.load()
+    ui_titles = set(products_page.get_product_titles())
+
+    # All API products must be rendered in UI
+    assert len(ui_titles) == len(api_names) == 6
+    assert ui_titles == api_names, f"Mismatch between API and UI: {ui_titles ^ api_names}"
+
+
+@pytest.mark.api
+def test_playwright_network_mocking_500_error_handling(page: Page):
+    """
+    Verify requirement 9: Playwright network mocking for HTTP 500 error.
+    Intercepts catalog endpoint with HTTP 500 and verifies UI displays graceful error notice.
+    """
+    page.route(
+        "**/catalog.json",
+        lambda route: route.fulfill(
+            status=500,
+            content_type="text/plain",
+            body="Internal Server Error: Simulated Fault"
+        )
+    )
+
+    products_page = ProductsPage(page)
+    products_page.load()
+    
+    # Verify graceful error message rendered in main container
+    error_notice = page.locator("text=Could not load products. Try again shortly.")
+    error_notice.wait_for(state="visible", timeout=10000)
+    assert error_notice.is_visible(), "UI should render 'Could not load products. Try again shortly.' on 500"
+
