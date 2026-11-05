@@ -5,6 +5,8 @@ import pytest
 from framework.pages import LoginPage, AccountPage, AdminPage
 from framework.config import TEST_CUSTOMER, TEST_ADMIN
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.smoke
 @pytest.mark.regression

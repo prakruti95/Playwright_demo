@@ -5,6 +5,8 @@ import pytest
 from playwright.sync_api import Page
 from framework.pages import HomePage, ProductsPage, ProductDetailPage, CartPage
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.mobile
 @pytest.mark.regression

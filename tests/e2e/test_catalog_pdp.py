@@ -4,6 +4,8 @@ E2E Test Suite 2: Product Catalog & Product Detail Page (PDP).
 import pytest
 from framework.pages import ProductsPage, ProductDetailPage
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.smoke
 @pytest.mark.catalog

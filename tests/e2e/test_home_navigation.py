@@ -4,6 +4,8 @@ E2E Test Suite 1: Homepage, Navigation, Branding, and Theme Toggle.
 import pytest
 from framework.pages import HomePage
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.smoke
 @pytest.mark.regression

@@ -19,8 +19,13 @@ from framework.pages import (
 
 
 @pytest.fixture(scope="function")
-def context(browser: Browser) -> Generator[BrowserContext, None, None]:
+def context(browser: Browser, request: pytest.FixtureRequest) -> Generator[BrowserContext, None, None]:
     """Provide isolated browser context with video and trace capture."""
+    os.makedirs("test-results/videos/", exist_ok=True)
+    os.makedirs("test-results/traces/", exist_ok=True)
+    os.makedirs("test-results/screenshots/", exist_ok=True)
+
+    test_name = request.node.name.replace("[", "_").replace("]", "_")
     context = browser.new_context(
         viewport={"width": 1280, "height": 800},
         record_video_dir="test-results/videos/",
@@ -28,7 +33,13 @@ def context(browser: Browser) -> Generator[BrowserContext, None, None]:
     )
     context.tracing.start(screenshots=True, snapshots=True, sources=True)
     yield context
-    context.tracing.stop(path="test-results/traces/trace.zip")
+
+    # Save trace named per test
+    trace_path = f"test-results/traces/trace_{test_name}.zip"
+    try:
+        context.tracing.stop(path=trace_path)
+    except Exception:
+        pass
     context.close()
 
 
@@ -100,7 +111,7 @@ def admin_page(page: Page) -> AdminPage:
     return AdminPage(page)
 
 
-# Screenshot on failure hook
+# Screenshot on failure hook with pytest-html integration
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -112,5 +123,12 @@ def pytest_runtest_makereport(item, call):
             screenshot_path = f"test-results/screenshots/{item.name}.png"
             try:
                 page.screenshot(path=screenshot_path, full_page=True)
+                # Attach to pytest-html report if extra attribute exists
+                if hasattr(rep, "extra"):
+                    try:
+                        from pytest_html import extras
+                        rep.extra.append(extras.image(screenshot_path))
+                    except Exception:
+                        pass
             except Exception:
                 pass

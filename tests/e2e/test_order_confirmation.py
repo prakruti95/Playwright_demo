@@ -5,6 +5,8 @@ import pytest
 from framework.pages import CheckoutPage, ProductDetailPage, OrderConfirmationPage
 from framework.config import TEST_SHIPPING_ADDRESS
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.smoke
 @pytest.mark.checkout

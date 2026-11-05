@@ -4,11 +4,13 @@ Configuration module for Northline Store Automation Testing.
 import os
 from typing import Dict, Any
 
-BASE_URL = os.getenv("TARGET_URL", "https://ecomcicid.netlify.app")
-MOCK_API_BASE_URL = os.getenv(
-    "MOCK_API_URL", 
-    "https://681444af225ff1af16285b31.mockapi.io/electronicapi"
-)
+# Primary Base URLs (Kept strictly separate per project specification)
+WEBSITE_BASE_URL: str = os.getenv("WEBSITE_BASE_URL") or os.getenv("TARGET_URL") or "https://ecomcicid.netlify.app"
+API_BASE_URL: str = os.getenv("API_BASE_URL") or os.getenv("MOCK_API_URL") or "https://681444af225ff1af16285b31.mockapi.io/electronicapi"
+
+# Aliases for backwards compatibility
+BASE_URL = WEBSITE_BASE_URL
+MOCK_API_BASE_URL = API_BASE_URL
 
 # Thresholds & Financial Constants Discovered from App Source
 FREE_SHIPPING_THRESHOLD: float = 75.00

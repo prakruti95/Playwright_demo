@@ -4,6 +4,8 @@ E2E Test Suite 4: Shopping Cart, Drawer, Quantity Updates, and Item Removal.
 import pytest
 from framework.pages import CartPage, ProductDetailPage
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.cart
 @pytest.mark.regression

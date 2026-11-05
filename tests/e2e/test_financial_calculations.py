@@ -5,6 +5,8 @@ import pytest
 from framework.pages import CartPage, ProductDetailPage
 from framework.config import FREE_SHIPPING_THRESHOLD, TAX_RATE
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.smoke
 @pytest.mark.cart

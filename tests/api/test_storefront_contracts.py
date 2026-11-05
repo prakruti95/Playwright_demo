@@ -7,6 +7,8 @@ from playwright.sync_api import Page, Route
 from framework.config import BASE_URL, TEST_SHIPPING_ADDRESS
 from framework.pages import ProductDetailPage, CheckoutPage
 
+pytestmark = [pytest.mark.api]
+
 
 @pytest.mark.api
 @pytest.mark.smoke

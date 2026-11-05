@@ -6,6 +6,8 @@ import pytest
 import requests
 from framework.config import MOCK_API_BASE_URL
 
+pytestmark = [pytest.mark.api]
+
 
 @pytest.mark.api
 @pytest.mark.smoke

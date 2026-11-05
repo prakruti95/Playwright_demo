@@ -4,6 +4,8 @@ E2E Test Suite 3: Catalog Filtering, Sorting, and URL Parameter Search.
 import pytest
 from framework.pages import ProductsPage
 
+pytestmark = [pytest.mark.e2e]
+
 
 @pytest.mark.catalog
 @pytest.mark.regression

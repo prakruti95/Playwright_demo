@@ -1,13 +1,33 @@
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+
+# Pytest & Test Artifacts
 .pytest_cache/
 test-results/
 playwright-report/
 blob-report/
+*.log
+
+# Environment variables & secrets
 .env
+.env.*
+*.env
+*.pem
+*.key
+*.cert
+credentials.json
+
+# Virtual environments
 .venv/
 env/
 venv/
-*.log
+ENV/
+env.bak/
+venv.bak/
+
+# Scratch & Temporary
 scratch/
+.tmp/
