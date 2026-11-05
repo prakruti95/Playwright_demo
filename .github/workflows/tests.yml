@@ -1,0 +1,151 @@
+name: Northline Store Automation CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    # Nightly scheduled execution at 02:00 UTC
+    - cron: '0 2 * * *'
+
+env:
+  WEBSITE_BASE_URL: ${{ secrets.WEBSITE_BASE_URL || 'https://ecomcicid.netlify.app' }}
+  API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://681444af225ff1af16285b31.mockapi.io/electronicapi' }}
+  TARGET_URL: ${{ secrets.TARGET_URL || 'https://ecomcicid.netlify.app' }}
+  MOCK_API_URL: ${{ secrets.MOCK_API_URL || 'https://681444af225ff1af16285b31.mockapi.io/electronicapi' }}
+
+jobs:
+  api-tests:
+    name: REST API & Contract Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Chromium for Contract & Interception Tests
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Execute API Test Suite
+        run: |
+          pytest -m "api" \
+                 --html=test-results/api-report.html \
+                 --self-contained-html \
+                 -v
+
+      - name: Upload API Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-report
+          path: |
+            test-results/api-report.html
+            test-results/screenshots/
+            test-results/traces/
+          retention-days: 14
+
+  smoke-tests:
+    name: Smoke Tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Browser & OS Dependencies
+        run: |
+          playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Execute Smoke Suite (${{ matrix.browser }})
+        run: |
+          pytest -m "smoke" \
+                 --browser ${{ matrix.browser }} \
+                 --html=test-results/smoke-report-${{ matrix.browser }}.html \
+                 --self-contained-html \
+                 -v
+
+      - name: Upload Smoke Test Artifacts (${{ matrix.browser }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-artifacts-${{ matrix.browser }}
+          path: |
+            test-results/smoke-report-${{ matrix.browser }}.html
+            test-results/screenshots/
+            test-results/traces/
+            test-results/videos/
+          retention-days: 14
+
+  e2e-regression-tests:
+    name: Full E2E Regression (${{ matrix.browser }})
+    needs: [smoke-tests]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Browser & OS Dependencies
+        run: |
+          playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Execute Full E2E Suite (${{ matrix.browser }})
+        run: |
+          pytest -m "e2e" \
+                 --browser ${{ matrix.browser }} \
+                 --html=test-results/e2e-report-${{ matrix.browser }}.html \
+                 --self-contained-html \
+                 -v
+
+      - name: Upload E2E Regression Artifacts (${{ matrix.browser }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts-${{ matrix.browser }}
+          path: |
+            test-results/e2e-report-${{ matrix.browser }}.html
+            test-results/screenshots/
+            test-results/traces/
+            test-results/videos/
+          retention-days: 14
