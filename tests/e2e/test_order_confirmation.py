@@ -45,6 +45,7 @@ def test_order_confirmation_number_format(
     checkout_page.fill_shipping_address(TEST_SHIPPING_ADDRESS)
     checkout_page.submit_shipping_form()
     checkout_page.place_order()
+    assert order_confirm_page.is_confirmed()
     
     order_num = order_confirm_page.get_order_number()
     assert order_num is not None, "Order number must be present"

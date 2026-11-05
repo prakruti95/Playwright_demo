@@ -25,7 +25,8 @@ class OrderConfirmationPage(BasePage):
         except Exception:
             return False
 
-    def get_order_number(self) -> Optional[str]:
+    def get_order_number(self, timeout: int = 10000) -> Optional[str]:
+        self.is_confirmed(timeout=timeout)
         text = self.page.locator("main").inner_text()
         match = re.search(r"(ORD-LOCAL-[0-9A-Z\-]+)", text)
         return match.group(1) if match else None

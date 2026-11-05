@@ -76,9 +76,14 @@ class ProductsPage(BasePage):
             "wellness": self.cat_wellness,
         }
         btn = mapping.get(category_name.lower())
-        if btn and btn.is_visible():
+        if btn:
+            btn.wait_for(state="visible", timeout=5000)
             btn.click()
             self.page.wait_for_timeout(500)
+            try:
+                self.product_cards.first.wait_for(state="visible", timeout=5000)
+            except Exception:
+                pass
 
     def select_sort(self, sort_option: str) -> None:
         """
