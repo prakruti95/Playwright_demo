@@ -37,6 +37,8 @@ jobs:
 
       - name: Run Pytest Suite (${{ matrix.browser }})
         env:
+          WEBSITE_BASE_URL: "https://ecomcicid.netlify.app"
+          API_BASE_URL: "https://681444af225ff1af16285b31.mockapi.io/electronicapi"
           TARGET_URL: "https://ecomcicid.netlify.app"
           MOCK_API_URL: "https://681444af225ff1af16285b31.mockapi.io/electronicapi"
         run: |
