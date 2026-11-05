@@ -63,3 +63,28 @@ def test_cart_remove_line_item(cart_page: CartPage, pdp: ProductDetailPage):
     cart_page.remove_item(0)
     count_after = cart_page.get_items_count()
     assert count_after == count_before - 1
+
+
+@pytest.mark.smoke
+@pytest.mark.cart
+@pytest.mark.regression
+def test_cart_persistence_across_page_reload(pdp: ProductDetailPage, cart_page: CartPage):
+    """Verify requirement 17: Cart items and quantities persist across browser page reload via localStorage."""
+    pdp.load("ceramic-pour-over-set")
+    pdp.add_to_cart()
+    assert pdp.get_cart_badge_count() >= 1
+
+    cart_page.load()
+    items_before = cart_page.get_items_count()
+    subtotal_before = cart_page.get_subtotal()
+    assert items_before >= 1
+
+    # Reload page and verify state persistence
+    cart_page.page.reload()
+    cart_page.page.wait_for_load_state("networkidle")
+
+    items_after = cart_page.get_items_count()
+    subtotal_after = cart_page.get_subtotal()
+    assert items_after == items_before, f"Item count mismatch after reload: {items_after} vs {items_before}"
+    assert subtotal_after == subtotal_before, f"Subtotal mismatch after reload: {subtotal_after} vs {subtotal_before}"
+

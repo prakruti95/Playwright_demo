@@ -41,3 +41,17 @@ def test_sign_out_clears_session(login_page: LoginPage, account_page: AccountPag
     
     account_page.sign_out()
     assert account_page.sign_in_link.is_visible()
+
+
+@pytest.mark.regression
+def test_invalid_email_format_validation(login_page: LoginPage):
+    """Verify requirement 15: Invalid email format triggers HTML5 validation error."""
+    login_page.load()
+    login_page.email_input.fill("invalid-email-address")
+    login_page.submit_btn.click()
+    
+    # HTML5 validation prevents submission and flags input as invalid
+    is_valid = login_page.email_input.evaluate("el => el.checkValidity()")
+    assert is_valid is False, "Email input should be flagged invalid for non-email string"
+    assert "/login" in login_page.get_current_url()
+

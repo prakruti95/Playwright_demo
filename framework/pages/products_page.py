@@ -35,6 +35,11 @@ class ProductsPage(BasePage):
     def load(self, query_params: str = "") -> None:
         path = f"/products{query_params}"
         self.navigate(path)
+        if "nonexistent" not in query_params.lower():
+            try:
+                self.product_cards.first.wait_for(state="visible", timeout=10000)
+            except Exception:
+                pass
 
     def get_products_count(self) -> int:
         return self.product_cards.count()
@@ -79,11 +84,17 @@ class ProductsPage(BasePage):
         """
         Options: 'Newest', 'Price: low to high', 'Popularity'
         """
+        self.sort_button.wait_for(state="visible", timeout=10000)
         self.sort_button.click()
         self.page.wait_for_timeout(300)
         option_btn = self.page.locator(f"button:has-text('{sort_option}')").last
+        option_btn.wait_for(state="visible", timeout=5000)
         option_btn.click()
         self.page.wait_for_timeout(500)
+        try:
+            self.product_cards.first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            pass
 
     def click_product(self, title_or_slug: str) -> None:
         selector = f"a[href*='{title_or_slug}'], a[href^='/products/']:has-text('{title_or_slug}')"

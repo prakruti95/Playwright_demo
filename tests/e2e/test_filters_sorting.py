@@ -59,3 +59,13 @@ def test_url_search_parameter(products_page: ProductsPage):
     assert products_page.get_products_count() == 1
     titles = products_page.get_product_titles()
     assert any("chair" in t.lower() for t in titles)
+
+
+@pytest.mark.catalog
+@pytest.mark.regression
+def test_url_search_no_matching_results(products_page: ProductsPage):
+    """Verify requirement 5: ?search= with non-matching query returns 0 results and empty notice."""
+    products_page.load("?search=NonExistentProductQueryXYZ987")
+    assert products_page.get_products_count() == 0
+    assert products_page.page.locator("text=No products match these filters.").is_visible()
+

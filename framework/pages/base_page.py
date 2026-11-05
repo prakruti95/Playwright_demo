@@ -1,7 +1,7 @@
 """
 Base Page Object providing reusable interactions, navigation, and header/footer locators.
 """
-from typing import Optional
+from typing import Optional, Any
 from playwright.sync_api import Page, Locator
 from framework.config import BASE_URL
 
@@ -30,9 +30,9 @@ class BasePage:
         self.newsletter_input = page.locator("input[aria-label='Email address']")
         self.newsletter_subscribe_btn = page.locator("button:has-text('Subscribe')")
 
-    def navigate(self, path: str = "/") -> None:
+    def navigate(self, path: str = "/") -> Optional[Any]:
         full_url = f"{BASE_URL.rstrip('/')}{path}"
-        self.page.goto(full_url, wait_until="networkidle")
+        return self.page.goto(full_url, wait_until="networkidle")
 
     def get_title(self) -> str:
         return self.page.title()

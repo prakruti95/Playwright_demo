@@ -12,6 +12,7 @@ class LoginPage(BasePage):
         self.email_input = page.locator("input[type='email']")
         self.password_input = page.locator("input[type='password']")
         self.sign_in_submit_btn = page.locator("button[type='submit']:has-text('Sign in')")
+        self.submit_btn = self.sign_in_submit_btn
         self.create_account_link = page.locator("a:has-text('Create one')")
         self.toast_alert = page.locator("[role='status'], [role='alert'], .toast")
 

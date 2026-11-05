@@ -18,8 +18,12 @@ class OrderConfirmationPage(BasePage):
         self.keep_shopping_btn = page.locator("a:has-text('Keep shopping'), button:has-text('Keep shopping')")
         self.view_orders_btn = page.locator("a:has-text('View orders'), button:has-text('View orders')")
 
-    def is_confirmed(self) -> bool:
-        return self.confirmation_heading.first.is_visible()
+    def is_confirmed(self, timeout: int = 10000) -> bool:
+        try:
+            self.confirmation_heading.first.wait_for(state="visible", timeout=timeout)
+            return True
+        except Exception:
+            return False
 
     def get_order_number(self) -> Optional[str]:
         text = self.page.locator("main").inner_text()

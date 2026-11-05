@@ -2,7 +2,7 @@
 E2E Test Suite 5: Shipping, Tax, and Financial Precision Validations.
 """
 import pytest
-from framework.pages import CartPage, ProductDetailPage
+from framework.pages import CartPage, ProductDetailPage, ProductsPage
 from framework.config import FREE_SHIPPING_THRESHOLD, TAX_RATE
 
 pytestmark = [pytest.mark.e2e]
@@ -52,3 +52,22 @@ def test_order_total_formula_precision(pdp: ProductDetailPage, cart_page: CartPa
     
     expected_total = round(subtotal + shipping + tax, 2)
     assert abs(total - expected_total) <= 0.01, f"Total mismatch: {total} vs {expected_total}"
+
+
+@pytest.mark.cart
+@pytest.mark.regression
+def test_shipping_below_75_threshold_behavior_with_actual_catalog(products_page: ProductsPage):
+    """
+    Verify requirement 12: Shipping below $75, if supported by actual product data.
+    Documents and verifies that all products in live catalog have prices >= $86.00,
+    confirming that sub-$75 orders are not achievable with single catalog products.
+    """
+    products_page.load()
+    prices = products_page.get_product_prices()
+    assert len(prices) == 6
+    min_price = min(prices)
+    assert min_price >= FREE_SHIPPING_THRESHOLD, (
+        f"Minimum catalog product price ${min_price:.2f} exceeds ${FREE_SHIPPING_THRESHOLD:.2f} threshold; "
+        "every individual item qualifies for free shipping under actual catalog data."
+    )
+

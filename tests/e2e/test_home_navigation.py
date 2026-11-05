@@ -58,3 +58,13 @@ def test_hero_cta_navigation(home_page: HomePage):
     home_page.load()
     home_page.click_new_arrivals()
     assert "sort=createdAt" in home_page.get_current_url()
+
+
+@pytest.mark.regression
+def test_invalid_url_route_behavior(home_page: HomePage):
+    """Verify requirement 20: Navigating to unknown URL returns SPA shell without crash."""
+    response = home_page.navigate("/non-existent-page-404")
+    assert response is not None
+    assert response.status == 200, "Netlify SPA catch-all serves HTTP 200 index.html shell"
+    assert "/non-existent-page-404" in home_page.get_current_url()
+
