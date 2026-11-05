@@ -11,6 +11,7 @@ on:
     - cron: '0 2 * * *'
 
 env:
+  PYTHONPATH: .
   WEBSITE_BASE_URL: ${{ secrets.WEBSITE_BASE_URL || 'https://ecomcicid.netlify.app' }}
   API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://681444af225ff1af16285b31.mockapi.io/electronicapi' }}
   TARGET_URL: ${{ secrets.TARGET_URL || 'https://ecomcicid.netlify.app' }}
@@ -41,7 +42,7 @@ jobs:
 
       - name: Execute API Test Suite
         run: |
-          pytest -m "api" \
+          python -m pytest -m "api" \
                  --html=test-results/api-report.html \
                  --self-contained-html \
                  -v
@@ -85,7 +86,7 @@ jobs:
 
       - name: Execute Smoke Suite (${{ matrix.browser }})
         run: |
-          pytest -m "smoke" \
+          python -m pytest -m "smoke" \
                  --browser ${{ matrix.browser }} \
                  --html=test-results/smoke-report-${{ matrix.browser }}.html \
                  --self-contained-html \
@@ -132,7 +133,7 @@ jobs:
 
       - name: Execute Full E2E Suite (${{ matrix.browser }})
         run: |
-          pytest -m "e2e" \
+          python -m pytest -m "e2e" \
                  --browser ${{ matrix.browser }} \
                  --html=test-results/e2e-report-${{ matrix.browser }}.html \
                  --self-contained-html \
